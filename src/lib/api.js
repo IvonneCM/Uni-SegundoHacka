@@ -33,6 +33,7 @@ export const authService = {
       return {
         token: "fake-jwt",
         user: { id: 1, name: "Ivonne", role: "student" }
+        //user: { id: 1, name: "Ivonne", role: "teacher" }
       };
     }
     return authApi.post('/auth/login', { email, password }).then(r => r.data).catch(handleError);
@@ -46,6 +47,7 @@ export const authService = {
   me: async () => {
     if (USE_MOCK) {
       return { id: 1, name: "Ivonne", role: "student" };
+      //return { id: 1, name: "Ivonne", role: "teacher" };
     }
     return authApi.get('/auth/me', withAuth()).then(r => r.data).catch(handleError);
   },
