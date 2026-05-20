@@ -19,6 +19,7 @@ const navItems = {
     { to: '/assignments', icon: '◈', label: 'Tareas' },
     { to: '/submissions', icon: '◉', label: 'Entregas' },
     { to: '/results', icon: '◎', label: 'Resultados' },
+    { to: '/users', icon: '◭', label: 'Usuarios' },
     { to: '/audit', icon: '◑', label: 'Auditoría' },
   ],
 };
