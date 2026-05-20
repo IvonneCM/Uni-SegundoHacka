@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 4003",
-    "start": "vite --port 4003",
+    "dev": "vite --port 4001",
+    "start": "vite --port 4001",
     "build": "vite build",
-    "preview": "vite preview --port 4003"
+    "preview": "vite preview --port 4001"
   },
   "dependencies": {
     "axios": "^1.6.0",
