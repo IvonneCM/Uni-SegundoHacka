@@ -4,87 +4,23 @@ import s from './Layout.module.css';
 
 const navItems = {
   student: [
-    {
-      to: "/dashboard",
-      icon: "⬡",
-      label: "Inicio",
-    },
-
-    {
-      to: "/assignments",
-      icon: "◈",
-      label: "Tareas",
-    },
-
-    {
-      to: "/submissions",
-      icon: "◉",
-      label: "Mis envíos",
-    },
+    { to: '/dashboard',   icon: '⬡', label: 'Inicio'    },
+    { to: '/assignments', icon: '◈', label: 'Tareas'    },
+    { to: '/submissions', icon: '◉', label: 'Mis envíos' },
   ],
-
   professor: [
-    {
-      to: "/professor",
-      icon: "⬡",
-      label: "Panel",
-    },
-
-    {
-      to: "/professor/assignments",
-      icon: "◈",
-      label: "Tareas",
-    },
-
-    {
-      to: "/submissions",
-      icon: "◉",
-      label: "Entregas",
-    },
-
-    {
-      to: "/results",
-      icon: "◎",
-      label: "Resultados",
-    },
+    { to: '/professor',              icon: '⬡', label: 'Panel'    },
+    { to: '/professor/assignments',  icon: '◈', label: 'Tareas'   },
+    { to: '/submissions',            icon: '◉', label: 'Entregas' },
+    { to: '/results',                icon: '◎', label: 'Resultados' },
   ],
-
   admin: [
-    {
-      to: "/professor",
-      icon: "⬡",
-      label: "Panel",
-    },
-
-    {
-      to: "/professor/assignments",
-      icon: "◈",
-      label: "Tareas",
-    },
-
-    {
-      to: "/submissions",
-      icon: "◉",
-      label: "Entregas",
-    },
-
-    {
-      to: "/results",
-      icon: "◎",
-      label: "Resultados",
-    },
-
-    {
-      to: "/audit",
-      icon: "◑",
-      label: "Auditoría",
-    },
-    { to: '/dashboard', icon: '⬡', label: 'Inicio' },
-    { to: '/assignments', icon: '◈', label: 'Tareas' },
-    { to: '/submissions', icon: '◉', label: 'Entregas' },
-    { to: '/results', icon: '◎', label: 'Resultados' },
-    { to: '/users', icon: '◭', label: 'Usuarios' },
-    { to: '/audit', icon: '◑', label: 'Auditoría' },
+    { to: '/dashboard',   icon: '⬡', label: 'Inicio'     },
+    { to: '/assignments', icon: '◈', label: 'Tareas'     },
+    { to: '/submissions', icon: '◉', label: 'Entregas'   },
+    { to: '/results',     icon: '◎', label: 'Resultados' },
+    { to: '/users',       icon: '◭', label: 'Usuarios'   },
+    { to: '/audit',       icon: '◑', label: 'Auditoría'  },
   ],
 };
 
@@ -113,7 +49,7 @@ export default function Layout({ children }) {
             <Link
               key={item.to}
               to={item.to}
-              className={`${s.navItem} ${location.pathname.startsWith(item.to) ? s.active : ''}`}
+              className={`${s.navItem} ${location.pathname === item.to ? s.active : ''}`}
             >
               <span className={s.navIcon}>{item.icon}</span>
               <span>{item.label}</span>
