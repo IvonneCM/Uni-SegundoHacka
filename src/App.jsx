@@ -9,6 +9,8 @@ import Submissions from './pages/Submissions/Submissions';
 import SubmissionDetail from './pages/Submissions/SubmissionDetail';
 import Results from './pages/Results/Results';
 import Audit from './pages/Results/Audit';
+import LmsSync from './pages/LmsSync';
+import Users from './pages/Users';
 import './index.css';
 
 function PrivateRoute({ children, roles }) {
@@ -52,6 +54,9 @@ export default function App() {
           <Route path="/audit" element={
             <PrivateRoute roles={['admin']}><Audit /></PrivateRoute>
           } />
+
+          <Route path="/lms-sync" element={<LmsSync />} />
+          <Route path="/users" element={<Users />} />
 
           <Route path="*" element={<Navigate to="/dashboard" />} />
         </Routes>
