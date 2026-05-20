@@ -55,8 +55,12 @@ export default function App() {
             <PrivateRoute roles={['admin']}><Audit /></PrivateRoute>
           } />
 
-          <Route path="/lms-sync" element={<LmsSync />} />
-          <Route path="/users" element={<Users />} />
+          <Route path="/lms-sync" element={
+            <PrivateRoute roles={['admin']}><LmsSync /></PrivateRoute>
+          } />
+          <Route path="/users" element={
+            <PrivateRoute roles={['admin']}><Users /></PrivateRoute>
+          } />
 
           <Route path="*" element={<Navigate to="/dashboard" />} />
         </Routes>
