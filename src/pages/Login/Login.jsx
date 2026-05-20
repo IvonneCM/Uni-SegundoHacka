@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth';
+import { Eye, EyeOff } from 'lucide-react';
 import s from './Login.module.css';
 
 export default function Login() {
@@ -9,6 +10,7 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -24,15 +26,6 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillDemo = (role) => {
-    const demos = {
-      student:   { email: 'student@test.com',   password: '123456' },
-      professor: { email: 'professor@test.com',  password: '123456' },
-      admin:     { email: 'admin@test.com',       password: '123456' },
-    };
-    setForm(demos[role]);
   };
 
   return (
@@ -57,13 +50,22 @@ export default function Login() {
           </div>
           <div className={s.field}>
             <label>Contraseña</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={e => set('password', e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-            />
+            <div className={s.passwordWrapper}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={form.password}
+                onChange={e => set('password', e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              />
+              <button
+                type="button"
+                className={s.eyeBtn}
+                onClick={() => setShowPassword(p => !p)}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
 
           {error && <p className={s.error}>{error}</p>}
@@ -71,17 +73,6 @@ export default function Login() {
           <button className={s.btn} onClick={handleSubmit} disabled={loading}>
             {loading ? 'Iniciando...' : 'Iniciar sesión'}
           </button>
-        </div>
-
-        <div className={s.demos}>
-          <p className={s.demosLabel}>Acceso rápido</p>
-          <div className={s.demosBtns}>
-            {['student', 'professor', 'admin'].map(r => (
-              <button key={r} className={s.demoBtn} onClick={() => fillDemo(r)}>
-                {r}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
     </div>
