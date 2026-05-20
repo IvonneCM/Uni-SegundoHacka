@@ -1,23 +1,15 @@
 import { useEffect, useState } from "react";
-
-import Swal from "sweetalert2";
-
-import {
-  FiPlus,
-  FiCalendar,
-  FiCode,
-  FiFileText,
-} from "react-icons/fi";
-
 import { Link } from "react-router-dom";
-
+import Swal from "sweetalert2";
+import { FiPlus, FiCalendar, FiFileText } from "react-icons/fi";
+import { useAuth } from "../../lib/auth";
 import { professorApi } from "../../lib/professorApi";
-
 import s from "./Professor.module.css";
 
 export default function ProfessorAssignments() {
-  const [assignments, setAssignments] = useState([]);
+  const { user } = useAuth();
 
+  const [assignments, setAssignments] = useState([]);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -30,24 +22,34 @@ export default function ProfessorAssignments() {
   }, []);
 
   const loadAssignments = async () => {
-    const data = await professorApi.getAssignments();
-    setAssignments(data);
+    try {
+      const data = await professorApi.getAssignments();
+      setAssignments(data);
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
   };
 
   const handleCreate = async (e) => {
     e.preventDefault();
 
+    if (!user?.id) {
+      Swal.fire("Error", "No se encontró el ID del profesor logueado.", "error");
+      return;
+    }
+
+    if (!form.title || !form.deadline) {
+      Swal.fire("Campos incompletos", "Título y fecha límite son obligatorios.", "warning");
+      return;
+    }
+
     try {
       await professorApi.createAssignment({
         ...form,
-        professor_id: "4ea3e7d8-2fad-4dca-b70d-xxxx",
+        professor_id: user.id,
       });
 
-      Swal.fire({
-        icon: "success",
-        title: "Tarea creada",
-        text: "La tarea fue registrada correctamente.",
-      });
+      Swal.fire("Tarea creada", "La tarea fue registrada correctamente.", "success");
 
       setForm({
         title: "",
@@ -58,11 +60,7 @@ export default function ProfessorAssignments() {
 
       loadAssignments();
     } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error.message,
-      });
+      Swal.fire("Error", error.message, "error");
     }
   };
 
@@ -70,84 +68,59 @@ export default function ProfessorAssignments() {
     <div className={s.page}>
       <div className={s.header}>
         <div>
+          <span className={s.kicker}>Submission Service</span>
           <h1>Gestión de tareas</h1>
-          <p>
-            Crear tareas, definir fechas límite y revisar entregas.
-          </p>
+          <p>Crear tareas, definir fecha límite y revisar entregas.</p>
         </div>
       </div>
 
       <div className={s.layout}>
         <form className={s.formCard} onSubmit={handleCreate}>
-          <h2>
-            <FiPlus />
-            Nueva tarea
-          </h2>
+          <h2><FiPlus /> Nueva tarea</h2>
 
           <div className={s.field}>
             <label>Título</label>
-
             <input
               value={form.title}
-              onChange={(e) =>
-                setForm({ ...form, title: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="Ej: Ejercicio de ciclos"
             />
           </div>
 
           <div className={s.field}>
             <label>Lenguaje</label>
-
             <select
               value={form.language}
-              onChange={(e) =>
-                setForm({ ...form, language: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, language: e.target.value })}
             >
-              <option>javascript</option>
-              <option>python</option>
-              <option>java</option>
-              <option>c</option>
-              <option>cpp</option>
+              <option value="javascript">javascript</option>
+              <option value="python">python</option>
+              <option value="java">java</option>
+              <option value="c">c</option>
+              <option value="cpp">cpp</option>
             </select>
           </div>
 
           <div className={s.field}>
-            <label>
-              <FiCalendar />
-              Fecha límite
-            </label>
-
+            <label><FiCalendar /> Fecha límite</label>
             <input
               type="datetime-local"
               value={form.deadline}
-              onChange={(e) =>
-                setForm({ ...form, deadline: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, deadline: e.target.value })}
             />
           </div>
 
           <div className={s.field}>
-            <label>
-              <FiFileText />
-              Descripción
-            </label>
-
+            <label><FiFileText /> Descripción</label>
             <textarea
               rows="6"
               value={form.description}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  description: e.target.value,
-                })
-              }
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Describe el problema, entradas, salidas y restricciones."
             />
           </div>
 
-          <button className={s.primaryBtn}>
-            Crear tarea
-          </button>
+          <button className={s.primaryBtn}>Crear tarea</button>
         </form>
 
         <div className={s.listCard}>
@@ -160,21 +133,10 @@ export default function ProfessorAssignments() {
                 to={`/professor/assignments/${assignment.id}`}
                 className={s.assignmentCard}
               >
-                <div className={s.assignmentTop}>
-                  <span className={s.languageBadge}>
-                    {assignment.language}
-                  </span>
-                </div>
-
+                <span className={s.languageBadge}>{assignment.language}</span>
                 <h3>{assignment.title}</h3>
-
-                <p>{assignment.description}</p>
-
-                <small>
-                  Fecha límite:
-                  {" "}
-                  {formatDate(assignment.deadline)}
-                </small>
+                <p>{assignment.description || "Sin descripción"}</p>
+                <small>Fecha límite: {formatDate(assignment.deadline)}</small>
               </Link>
             ))}
           </div>
@@ -185,5 +147,6 @@ export default function ProfessorAssignments() {
 }
 
 function formatDate(date) {
+  if (!date) return "—";
   return new Date(date).toLocaleString("es-BO");
 }
