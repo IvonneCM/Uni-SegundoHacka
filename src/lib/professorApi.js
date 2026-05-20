@@ -1,4 +1,4 @@
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 const SUBMISSION_URL =
   import.meta.env.VITE_SUBMISSION_URL || "http://localhost:4004";
@@ -124,4 +124,27 @@ export const professorApi = {
 
     return data.submissions;
   },
+  getSubmissionsByStudent: async (studentId) => {
+  if (USE_MOCK) {
+    return mockSubmissions;
+  }
+
+  const data = await request(
+    `${SUBMISSION_URL}/submissions/student/${studentId}`
+  );
+
+  return data.submissions || data;
+},
+
+getSubmissionById: async (submissionId) => {
+  if (USE_MOCK) {
+    return mockSubmissions.find((item) => item.id === submissionId);
+  }
+
+  const data = await request(
+    `${SUBMISSION_URL}/submissions/${submissionId}`
+  );
+
+  return data.submission || data;
+},
 };

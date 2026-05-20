@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const gradingApi = axios.create({
-  baseURL: import.meta.env.VITE_GRADING_API_URL || 'http://localhost:3003',
+  baseURL: import.meta.env.VITE_GRADING_API_URL || 'http://localhost:4002',
 });
 
 export const gradeSubmissionApi = async (submissionId) => {
