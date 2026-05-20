@@ -123,4 +123,63 @@ export const professorApi = {
       }),
     });
   },
+    getSubmissionsByAssignment: async (assignmentId) => {
+    if (USE_MOCK) {
+      return mockSubmissions;
+    }
+
+    const data = await request(
+      `${SUBMISSION_URL}/submissions/assignment/${assignmentId}`
+    );
+
+    return data.submissions || data;
+  },
+
+  getSubmissionsByStudent: async (studentId) => {
+    if (USE_MOCK) {
+      return mockSubmissions;
+    }
+
+    const data = await request(
+      `${SUBMISSION_URL}/submissions/student/${studentId}`
+    );
+
+    return data.submissions || data;
+  },
+
+  getSubmissionById: async (submissionId) => {
+    if (USE_MOCK) {
+      return mockSubmissions.find((item) => item.id === submissionId);
+    }
+
+    const data = await request(`${SUBMISSION_URL}/submissions/${submissionId}`);
+
+    return data.submission || data;
+  },
+  getAssignmentById: async (assignmentId) => {
+  if (USE_MOCK) {
+    return mockAssignments.find((item) => item.id === assignmentId);
+  }
+
+  const data = await request(`${SUBMISSION_URL}/assignments/${assignmentId}`);
+
+  return data.assignment || data;
+},
+
+submitCode: async (payload) => {
+  if (USE_MOCK) {
+    return {
+      id: "sub-demo",
+      attempt_number: 1,
+      ...payload,
+    };
+  }
+
+  const data = await request(`${SUBMISSION_URL}/submissions`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  return data.submission || data;
+},
 };
