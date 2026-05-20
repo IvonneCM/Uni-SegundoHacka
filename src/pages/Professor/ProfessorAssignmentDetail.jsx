@@ -12,9 +12,11 @@ import {
   FiAward,
   FiShield,
   FiDatabase,
+  FiLoader,
 } from "react-icons/fi";
 
 import { professorApi } from "../../lib/professorApi";
+import { plagiarismService } from "../../lib/api";
 import s from "./Professor.module.css";
 
 export default function ProfessorAssignmentDetail() {
@@ -22,6 +24,20 @@ export default function ProfessorAssignmentDetail() {
 
   const [summary, setSummary] = useState(null);
   const [submissions, setSubmissions] = useState([]);
+  const [plagiarismChecking, setPlagiarismChecking] = useState({});
+  const [plagiarismResults, setPlagiarismResults] = useState({});
+
+  const handleCheckPlagiarism = async (submissionId) => {
+    setPlagiarismChecking(prev => ({ ...prev, [submissionId]: true }));
+    try {
+      const result = await plagiarismService.triggerCheck(submissionId);
+      setPlagiarismResults(prev => ({ ...prev, [submissionId]: result }));
+    } catch (err) {
+      setPlagiarismResults(prev => ({ ...prev, [submissionId]: { error: err.message } }));
+    } finally {
+      setPlagiarismChecking(prev => ({ ...prev, [submissionId]: false }));
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -228,10 +244,45 @@ export default function ProfessorAssignmentDetail() {
                     Calificar
                   </Link>
 
-                  <button className={s.miniBtn} type="button">
+                  <button
+                    className={s.miniBtn}
+                    type="button"
+                    onClick={() => handleCheckPlagiarism(submission.id)}
+                    disabled={plagiarismChecking[submission.id]}
+                    title="Ejecutar análisis de plagio"
+                  >
                     <FiShield />
-                    Plagio
+                    {plagiarismChecking[submission.id] ? "Analizando…" : "Plagio"}
                   </button>
+                  {plagiarismResults[submission.id] && !plagiarismResults[submission.id].error && (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        padding: "2px 7px",
+                        borderRadius: 6,
+                        background:
+                          plagiarismResults[submission.id].result === "high_risk"
+                            ? "#3f1f1f"
+                            : plagiarismResults[submission.id].result === "medium_risk"
+                            ? "#3f3010"
+                            : "#1a2e1a",
+                        color:
+                          plagiarismResults[submission.id].result === "high_risk"
+                            ? "#f87171"
+                            : plagiarismResults[submission.id].result === "medium_risk"
+                            ? "#fbbf24"
+                            : "#6ee7b7",
+                      }}
+                      title={`Int: ${plagiarismResults[submission.id].internalSimilarity} · Ext: ${plagiarismResults[submission.id].externalSimilarity}`}
+                    >
+                      {plagiarismResults[submission.id].result?.replace("_", " ")} · {plagiarismResults[submission.id].internalSimilarity}
+                    </span>
+                  )}
+                  {plagiarismResults[submission.id]?.error && (
+                    <span style={{ fontSize: 11, color: "#f87171" }}>
+                      Error
+                    </span>
+                  )}
 
                   <button className={s.miniBtn} type="button">
                     <FiDatabase />

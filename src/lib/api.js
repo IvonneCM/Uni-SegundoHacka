@@ -164,23 +164,42 @@ export const gradingService = {
 };
 
 // ─── Plagiarism Service ──────────────────────────────────────────────────────
-const plagiarismApi = axios.create({ baseURL: PLAGIARISM_URL });
-
+// POST /plagiarism/check/:submissionId  → { success, message, data: { submissionId, result, internalSimilarity, externalSimilarity, ... } }
+// GET  /plagiarism/report/:submissionId → { success, data: { reportId, result, internalSimilarity, externalSimilarity, details, ... } }
+ 
 export const plagiarismService = {
+  // GET /plagiarism/report/:submissionId
   getReport: async (submissionId) => {
     if (USE_MOCK) {
       return {
-        internal_similarity: 10,
-        external_similarity: 5,
-        result: "low_risk"
+        reportId: 'mock-report-id',
+        result: 'low_risk',
+        internalSimilarity: '10.00%',
+        externalSimilarity: '5.00%',
+        externalService: 'TurnItIn Mock',
+        matchedSubmissionId: null,
+        checkedAt: new Date().toISOString(),
+        details: {
+          internalAnalysis: { algorithm: 'Jaccard Similarity (token-based)', similarity: '10.00%', totalCompared: 3 },
+          externalAnalysis: { service: 'TurnItIn Mock', similarity: '5.00%', reportUrl: null },
+          thresholds: { low: '< 30%', medium: '30% - 60%', high: '>= 60%' },
+          finalRisk: 'low_risk',
+        },
       };
     }
-    return plagiarismApi.get(`/plagiarism/${submissionId}`, withAuth()).then(r => r.data).catch(handleError);
+    return plagiarismApi
+      .get(`/plagiarism/report/${submissionId}`, withAuth())
+      .then(r => r.data?.data)
+      .catch(handleError);
   },
-
-  triggerCheck: async () => {
-    if (USE_MOCK) return { status: "checking" };
-    return plagiarismApi.post(`/plagiarism`, {}, withAuth()).then(r => r.data).catch(handleError);
+ 
+  // POST /plagiarism/check/:submissionId
+  triggerCheck: async (submissionId) => {
+    if (USE_MOCK) return { result: 'low_risk', internalSimilarity: '10.00%', externalSimilarity: '5.00%' };
+    return plagiarismApi
+      .post(`/plagiarism/check/${submissionId}`, {}, withAuth())
+      .then(r => r.data?.data)
+      .catch(handleError);
   },
 };
 

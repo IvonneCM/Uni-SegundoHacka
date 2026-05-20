@@ -179,9 +179,9 @@ export default function SubmissionDetail() {
               <p className={s.plagLabel}>Similitud interna</p>
               <p
                 className={s.plagVal}
-                style={{ color: getColor(plagiarism.internal_similarity) }}
+                style={{ color: getColor(parseFloat(plagiarism.internalSimilarity)) }}
               >
-                {plagiarism.internal_similarity ?? 0}%
+                {plagiarism.internalSimilarity ?? "—"}
               </p>
             </div>
 
@@ -189,9 +189,9 @@ export default function SubmissionDetail() {
               <p className={s.plagLabel}>Similitud externa</p>
               <p
                 className={s.plagVal}
-                style={{ color: getColor(plagiarism.external_similarity) }}
+                style={{ color: getColor(parseFloat(plagiarism.externalSimilarity)) }}
               >
-                {plagiarism.external_similarity ?? 0}%
+                {plagiarism.externalSimilarity ?? "—"}
               </p>
             </div>
 
@@ -205,13 +205,57 @@ export default function SubmissionDetail() {
             <div className={s.plagCard}>
               <p className={s.plagLabel}>Servicio externo</p>
               <p className={s.plagService}>
-                {plagiarism.external_service || "—"}
+                {plagiarism.externalService || "—"}
               </p>
             </div>
+
+            {plagiarism.matchedSubmissionId && (
+              <div className={s.plagCard}>
+                <p className={s.plagLabel}>Entrega similar</p>
+                <p className={s.plagService} style={{ fontSize: 11 }}>
+                  {plagiarism.matchedSubmissionId}
+                </p>
+              </div>
+            )}
+
+            {plagiarism.checkedAt && (
+              <div className={s.plagCard}>
+                <p className={s.plagLabel}>Analizado el</p>
+                <p className={s.plagService}>
+                  {new Date(plagiarism.checkedAt).toLocaleString("es-BO")}
+                </p>
+              </div>
+            )}
           </div>
 
-          {plagiarism.details && (
-            <p className={s.plagDetails}>{plagiarism.details}</p>
+          {plagiarism.details?.internalAnalysis && (
+            <div className={s.plagCard} style={{ marginTop: 12 }}>
+              <p className={s.plagLabel}>Algoritmo interno</p>
+              <p className={s.plagService}>
+                {plagiarism.details.internalAnalysis.algorithm} &mdash; {plagiarism.details.internalAnalysis.totalCompared} entregas comparadas
+              </p>
+            </div>
+          )}
+
+          {plagiarism.details?.externalAnalysis?.reportUrl && (
+            <div className={s.plagCard} style={{ marginTop: 8 }}>
+              <p className={s.plagLabel}>Reporte externo</p>
+              <a
+                href={plagiarism.details.externalAnalysis.reportUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={s.plagService}
+                style={{ color: "#818cf8", textDecoration: "underline" }}
+              >
+                Ver en {plagiarism.details.externalAnalysis.service}
+              </a>
+            </div>
+          )}
+
+          {plagiarism.details?.thresholds && (
+            <p className={s.plagDetails} style={{ marginTop: 10 }}>
+              Umbrales — Bajo: {plagiarism.details.thresholds.low} · Medio: {plagiarism.details.thresholds.medium} · Alto: {plagiarism.details.thresholds.high}
+            </p>
           )}
         </div>
       )}
