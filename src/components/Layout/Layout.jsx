@@ -4,17 +4,81 @@ import s from './Layout.module.css';
 
 const navItems = {
   student: [
-    { to: '/dashboard', icon: '⬡', label: 'Inicio' },
-    { to: '/assignments', icon: '◈', label: 'Tareas' },
-    { to: '/submissions', icon: '◉', label: 'Mis envíos' },
+    {
+      to: "/dashboard",
+      icon: "⬡",
+      label: "Inicio",
+    },
+
+    {
+      to: "/assignments",
+      icon: "◈",
+      label: "Tareas",
+    },
+
+    {
+      to: "/submissions",
+      icon: "◉",
+      label: "Mis envíos",
+    },
   ],
+
   professor: [
-    { to: '/dashboard', icon: '⬡', label: 'Inicio' },
-    { to: '/assignments', icon: '◈', label: 'Tareas' },
-    { to: '/submissions', icon: '◉', label: 'Entregas' },
-    { to: '/results', icon: '◎', label: 'Resultados' },
+    {
+      to: "/professor",
+      icon: "⬡",
+      label: "Panel",
+    },
+
+    {
+      to: "/professor/assignments",
+      icon: "◈",
+      label: "Tareas",
+    },
+
+    {
+      to: "/submissions",
+      icon: "◉",
+      label: "Entregas",
+    },
+
+    {
+      to: "/results",
+      icon: "◎",
+      label: "Resultados",
+    },
   ],
+
   admin: [
+    {
+      to: "/professor",
+      icon: "⬡",
+      label: "Panel",
+    },
+
+    {
+      to: "/professor/assignments",
+      icon: "◈",
+      label: "Tareas",
+    },
+
+    {
+      to: "/submissions",
+      icon: "◉",
+      label: "Entregas",
+    },
+
+    {
+      to: "/results",
+      icon: "◎",
+      label: "Resultados",
+    },
+
+    {
+      to: "/audit",
+      icon: "◑",
+      label: "Auditoría",
+    },
     { to: '/dashboard', icon: '⬡', label: 'Inicio' },
     { to: '/assignments', icon: '◈', label: 'Tareas' },
     { to: '/submissions', icon: '◉', label: 'Entregas' },
