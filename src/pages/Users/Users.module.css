@@ -1,11 +1,135 @@
+.container { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 24px;
+  width: 100%;
+  max-width: 100%;        /* ← cambia 1200px por 100% */
+  padding: 24px;
+  box-sizing: border-box;
+}
 
-.container { display: flex; flex-direction: column; gap: 24px; }
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
 .header h2 { font-size: 20px; color: #e2e8f0; margin-bottom: 4px; }
 .header p { font-size: 13px; color: #64748b; }
-.table { background: #1a1e28; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
-.tableHeader { display: grid; grid-template-columns: 1.5fr 1.5fr 120px 100px; padding: 10px 12px; font-size: 11.5px; color: #475569; font-weight: 500; }
-.tableRow { display: grid; grid-template-columns: 1.5fr 1.5fr 120px 100px; align-items: center; padding: 12px; border-radius: 6px; font-size: 13px; color: #e2e8f0; transition: background 0.15s; }
+
+.btnAdd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 0 0 0 rgba(99,102,241,0.5);
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  animation: pulse 2.5s infinite;
+}
+.btnAdd:hover {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 20px rgba(99,102,241,0.45);
+  animation: none;
+}
+.btnAdd:active {
+  transform: translateY(0) scale(0.98);
+}
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(99,102,241,0.5); }
+  70%  { box-shadow: 0 0 0 10px rgba(99,102,241,0); }
+  100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); }
+}
+
+/* Stats */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.statCard {
+  background: #1a1e28;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.statCard:hover {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.12);
+}
+.statIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.statNum { font-size: 22px; font-weight: 600; color: #e2e8f0; }
+.statLabel { font-size: 12px; color: #64748b; }
+
+/* Tabla */
+.table {
+  background: #1a1e28;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tableHeader {
+  display: grid;
+  grid-template-columns: 2fr 2fr 130px 110px 90px;
+  padding: 10px 12px;
+  font-size: 11.5px;
+  color: #475569;
+  font-weight: 500;
+}
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 2fr 130px 110px 90px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #e2e8f0;
+  transition: background 0.15s;
+}
 .tableRow:hover { background: rgba(255,255,255,0.03); }
-.mono { font-family: 'Space Mono', monospace; font-size: 12px; color: #94a3b8; }
-.muted { color: #64748b; font-size: 12px; }
 .name { font-weight: 500; color: #e2e8f0; }
+.muted { color: #64748b; font-size: 12px; }
+
+.actions { display: flex; gap: 6px; }
+.btnIcon {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 5px 7px;
+  cursor: pointer;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s, color 0.15s;
+}
+.btnIcon:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+.btnDanger:hover { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.2); }
+
+@media (max-width: 700px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .tableHeader { display: none; }
+  .tableRow { grid-template-columns: 1fr 1fr; gap: 4px; }
+}

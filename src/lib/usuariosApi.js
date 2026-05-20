@@ -51,8 +51,8 @@ export const usuariosService = {
 
   // Eliminar usuario 
   eliminarUsuario: async (id) => {
-    return usuariosApi.patch(`/usuarios/${id}`, withAuth())
-      .then(r => r.data)
-      .catch(handleError);
-  }
+    return usuariosApi.patch(`/usuarios/${id}`, {}, withAuth())
+        .then(r => r.data)
+        .catch(handleError);
+    }
 };
