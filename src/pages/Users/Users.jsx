@@ -5,25 +5,32 @@ import { Pencil, Trash2, UserPlus, Users, GraduationCap, BookOpen, ShieldCheck }
 import Badge from '../../components/Badge/Badge';
 import s from './Users.module.css';
 import Swal from 'sweetalert2';
+import UserModal from './UserModal';
 
 export default function UsersPage() {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterRole, setFilterRole] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
 
   useEffect(() => {
+    cargarUsuarios();
+  }, []);
+
+  const cargarUsuarios = () => {
     usuariosService.getUsuarios()
       .then(data => setUsers(data.usuarios || data))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  };
 
   const stats = {
-    total:     users.length,
-    students:  users.filter(u => u.role === 'student').length,
-    professors:users.filter(u => u.role === 'professor').length,
-    admins:    users.filter(u => u.role === 'admin').length,
+    total:      users.length,
+    students:   users.filter(u => u.role === 'student').length,
+    professors: users.filter(u => u.role === 'professor').length,
+    admins:     users.filter(u => u.role === 'admin').length,
   };
 
   const filtered = filterRole
@@ -31,49 +38,61 @@ export default function UsersPage() {
     : users;
 
   const handleEliminar = async (id) => {
-  const result = await Swal.fire({
-    title: '¿Eliminar usuario?',
-    text: 'Esta acción no se puede deshacer.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar',
-    background: '#1a1e28',
-    color: '#e2e8f0',
-    confirmButtonColor: '#ef4444',
-    cancelButtonColor: '#374151',
-    customClass: {
-      popup: 'swal-dark',
+    const result = await Swal.fire({
+      title: '¿Eliminar usuario?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      background: '#1a1e28',
+      color: '#e2e8f0',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#374151',
+      customClass: { popup: 'swal-dark' }
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await usuariosService.eliminarUsuario(id);
+      setUsers(prev => prev.filter(u => u.id !== id));
+      Swal.fire({
+        title: 'Eliminado',
+        text: 'El usuario fue eliminado correctamente.',
+        icon: 'success',
+        background: '#1a1e28',
+        color: '#e2e8f0',
+        confirmButtonColor: '#6366f1',
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch {
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudo eliminar el usuario.',
+        icon: 'error',
+        background: '#1a1e28',
+        color: '#e2e8f0',
+        confirmButtonColor: '#6366f1',
+      });
     }
-  });
+  };
 
-  if (!result.isConfirmed) return;
+  const handleAbrirNuevo = () => {
+    setEditingUser(null);
+    setModalOpen(true);
+  };
 
-  try {
-    await usuariosService.eliminarUsuario(id);
-    setUsers(prev => prev.filter(u => u.id !== id));
+  const handleAbrirEditar = (u) => {
+    setEditingUser(u);
+    setModalOpen(true);
+  };
 
-    Swal.fire({
-      title: 'Eliminado',
-      text: 'El usuario fue eliminado correctamente.',
-      icon: 'success',
-      background: '#1a1e28',
-      color: '#e2e8f0',
-      confirmButtonColor: '#6366f1',
-      timer: 2000,
-      showConfirmButton: false,
-    });
-  } catch {
-    Swal.fire({
-      title: 'Error',
-      text: 'No se pudo eliminar el usuario.',
-      icon: 'error',
-      background: '#1a1e28',
-      color: '#e2e8f0',
-      confirmButtonColor: '#6366f1',
-    });
-  }
-};
+  const handleCerrarModal = () => {
+    setModalOpen(false);
+    setEditingUser(null);
+  };
 
   return (
     <div className={s.container}>
@@ -85,7 +104,7 @@ export default function UsersPage() {
           <p>Directorio de estudiantes, profesores y administradores</p>
         </div>
         {user?.role === 'admin' && (
-          <button className={s.btnAdd}>
+          <button className={s.btnAdd} onClick={handleAbrirNuevo}>
             <UserPlus size={15} /> Nuevo usuario
           </button>
         )}
@@ -151,7 +170,11 @@ export default function UsersPage() {
               </span>
               {user?.role === 'admin' && (
                 <span className={s.actions}>
-                  <button className={s.btnIcon} title="Editar">
+                  <button
+                    className={s.btnIcon}
+                    title="Editar"
+                    onClick={() => handleAbrirEditar(u)}
+                  >
                     <Pencil size={14} />
                   </button>
                   <button
@@ -172,6 +195,16 @@ export default function UsersPage() {
           )}
         </div>
       )}
+
+      {/* Modal agregar / editar */}
+      {modalOpen && (
+        <UserModal
+          user={editingUser}
+          onClose={handleCerrarModal}
+          onSaved={cargarUsuarios}
+        />
+      )}
+
     </div>
   );
 }
