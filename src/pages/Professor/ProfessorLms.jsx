@@ -20,10 +20,9 @@ export default function ProfessorLms() {
   return (
     <div className={s.page}>
       <div className={s.header}>
-        <div>
-          <h1>Integración LMS</h1>
-          <p>Control de sincronización con el sistema académico mainframe.</p>
-        </div>
+        <span className={s.kicker}>LMS Integration Service</span>
+        <h1>Integración LMS</h1>
+        <p>Control de sincronización con el sistema académico mainframe.</p>
       </div>
 
       <div className={s.cardGrid}>

@@ -8,7 +8,6 @@ import s from "./Professor.module.css";
 
 export default function ProfessorAssignments() {
   const { user } = useAuth();
-
   const [assignments, setAssignments] = useState([]);
   const [form, setForm] = useState({
     title: "",
@@ -23,8 +22,7 @@ export default function ProfessorAssignments() {
 
   const loadAssignments = async () => {
     try {
-      const data = await professorApi.getAssignments();
-      setAssignments(data);
+      setAssignments(await professorApi.getAssignments());
     } catch (error) {
       Swal.fire("Error", error.message, "error");
     }
@@ -44,11 +42,7 @@ export default function ProfessorAssignments() {
     }
 
     try {
-      await professorApi.createAssignment({
-        ...form,
-        professor_id: user.id,
-      });
-
+      await professorApi.createAssignment({ ...form, professor_id: user.id });
       Swal.fire("Tarea creada", "La tarea fue registrada correctamente.", "success");
 
       setForm({
@@ -67,11 +61,9 @@ export default function ProfessorAssignments() {
   return (
     <div className={s.page}>
       <div className={s.header}>
-        <div>
-          <span className={s.kicker}>Submission Service</span>
-          <h1>Gestión de tareas</h1>
-          <p>Crear tareas, definir fecha límite y revisar entregas.</p>
-        </div>
+        <span className={s.kicker}>Submission Service</span>
+        <h1>Gestión de tareas</h1>
+        <p>Crear tareas, definir fecha límite y revisar entregas.</p>
       </div>
 
       <div className={s.layout}>
@@ -80,19 +72,12 @@ export default function ProfessorAssignments() {
 
           <div className={s.field}>
             <label>Título</label>
-            <input
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="Ej: Ejercicio de ciclos"
-            />
+            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           </div>
 
           <div className={s.field}>
             <label>Lenguaje</label>
-            <select
-              value={form.language}
-              onChange={(e) => setForm({ ...form, language: e.target.value })}
-            >
+            <select value={form.language} onChange={(e) => setForm({ ...form, language: e.target.value })}>
               <option value="javascript">javascript</option>
               <option value="python">python</option>
               <option value="java">java</option>
@@ -103,21 +88,12 @@ export default function ProfessorAssignments() {
 
           <div className={s.field}>
             <label><FiCalendar /> Fecha límite</label>
-            <input
-              type="datetime-local"
-              value={form.deadline}
-              onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-            />
+            <input type="datetime-local" value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} />
           </div>
 
           <div className={s.field}>
             <label><FiFileText /> Descripción</label>
-            <textarea
-              rows="6"
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Describe el problema, entradas, salidas y restricciones."
-            />
+            <textarea rows="6" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </div>
 
           <button className={s.primaryBtn}>Crear tarea</button>
@@ -127,16 +103,12 @@ export default function ProfessorAssignments() {
           <h2>Tareas registradas</h2>
 
           <div className={s.cardGrid}>
-            {assignments.map((assignment) => (
-              <Link
-                key={assignment.id}
-                to={`/professor/assignments/${assignment.id}`}
-                className={s.assignmentCard}
-              >
-                <span className={s.languageBadge}>{assignment.language}</span>
-                <h3>{assignment.title}</h3>
-                <p>{assignment.description || "Sin descripción"}</p>
-                <small>Fecha límite: {formatDate(assignment.deadline)}</small>
+            {assignments.map((a) => (
+              <Link key={a.id} to={`/professor/assignments/${a.id}`} className={s.assignmentCard}>
+                <span className={s.languageBadge}>{a.language}</span>
+                <h3>{a.title}</h3>
+                <p>{a.description || "Sin descripción"}</p>
+                <small>Fecha límite: {formatDate(a.deadline)}</small>
               </Link>
             ))}
           </div>

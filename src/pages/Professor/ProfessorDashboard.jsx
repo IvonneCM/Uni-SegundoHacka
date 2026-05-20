@@ -15,129 +15,80 @@ export default function ProfessorDashboard() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    professorApi.getDashboard().then(setData);
+    professorApi.getDashboard().then(setData).catch(console.error);
   }, []);
 
-  if (!data) {
-    return <div className={s.loading}>Cargando panel del profesor...</div>;
-  }
+  if (!data) return <div className={s.loading}>Cargando panel...</div>;
 
   return (
     <div className={s.page}>
-      <div className={s.header}>
+      <div className={s.headerRow}>
         <div>
           <span className={s.kicker}>Frog Software Ltda.</span>
           <h1>Panel del Profesor</h1>
-          <p>Gestión de tareas, entregas, intentos, criterios y auditoría.</p>
+          <p>Gestión de tareas, entregas, intentos, calificación y auditoría.</p>
         </div>
 
         <Link to="/professor/assignments" className={s.primaryBtn}>
-          Gestionar tareas
-          <FiArrowRight />
+          Gestionar tareas <FiArrowRight />
         </Link>
       </div>
 
       <div className={s.statsGrid}>
-        <div className={s.statCard}>
-          <div className={s.statIcon}>
-            <FiBookOpen />
-          </div>
-          <div>
-            <span>Tareas creadas</span>
-            <strong>{data.totalAssignments}</strong>
-          </div>
-        </div>
-
-        <div className={s.statCard}>
-          <div className={s.statIcon}>
-            <FiClock />
-          </div>
-          <div>
-            <span>Tareas abiertas</span>
-            <strong>{data.openAssignments}</strong>
-          </div>
-        </div>
-
-        <div className={s.statCard}>
-          <div className={s.statIcon}>
-            <FiCheckCircle />
-          </div>
-          <div>
-            <span>Calificadas</span>
-            <strong>{data.gradedSubmissions}</strong>
-          </div>
-        </div>
-
-        <div className={s.statCard}>
-          <div className={s.statIcon}>
-            <FiAlertCircle />
-          </div>
-          <div>
-            <span>Pendientes</span>
-            <strong>{data.pendingSubmissions}</strong>
-          </div>
-        </div>
+        <Stat icon={<FiBookOpen />} label="Tareas" value={data.totalAssignments} />
+        <Stat icon={<FiClock />} label="Abiertas" value={data.openAssignments} />
+        <Stat icon={<FiCheckCircle />} label="Calificadas" value={data.gradedSubmissions} />
+        <Stat icon={<FiAlertCircle />} label="Pendientes" value={data.pendingSubmissions} />
       </div>
 
       <section className={s.section}>
         <div className={s.sectionHeader}>
           <div>
             <h2>Tareas recientes</h2>
-            <p>Últimas tareas creadas por el profesor.</p>
+            <p>Últimas tareas registradas en Submission Service.</p>
           </div>
-
           <Link to="/professor/assignments" className={s.textLink}>
-            Ver todas
-            <FiArrowRight />
+            Ver todas <FiArrowRight />
           </Link>
         </div>
 
         <div className={s.cardGrid}>
-          {data.recentAssignments.map((assignment) => (
-            <Link
-              key={assignment.id}
-              to={`/professor/assignments/${assignment.id}`}
-              className={s.assignmentCard}
-            >
-              <div className={s.assignmentTop}>
-                <span className={s.languageBadge}>
-                  <FiCode />
-                  {assignment.language}
-                </span>
-
-                <span
-                  className={
-                    new Date(assignment.deadline) > new Date()
-                      ? s.openBadge
-                      : s.closedBadge
-                  }
-                >
-                  {new Date(assignment.deadline) > new Date()
-                    ? "Abierta"
-                    : "Cerrada"}
-                </span>
-              </div>
-
-              <h3>{assignment.title}</h3>
-              <p>{assignment.description}</p>
-
-              <small>Fecha límite: {formatDate(assignment.deadline)}</small>
-            </Link>
-          ))}
+          {data.recentAssignments.length === 0 ? (
+            <p className={s.empty}>No hay tareas registradas.</p>
+          ) : (
+            data.recentAssignments.map((a) => (
+              <Link key={a.id} to={`/professor/assignments/${a.id}`} className={s.assignmentCard}>
+                <div className={s.assignmentTop}>
+                  <span className={s.languageBadge}><FiCode /> {a.language}</span>
+                  <span className={new Date(a.deadline) > new Date() ? s.openBadge : s.closedBadge}>
+                    {new Date(a.deadline) > new Date() ? "Abierta" : "Cerrada"}
+                  </span>
+                </div>
+                <h3>{a.title}</h3>
+                <p>{a.description || "Sin descripción."}</p>
+                <small>Fecha límite: {formatDate(a.deadline)}</small>
+              </Link>
+            ))
+          )}
         </div>
       </section>
     </div>
   );
 }
 
+function Stat({ icon, label, value }) {
+  return (
+    <div className={s.statCard}>
+      <div className={s.statIcon}>{icon}</div>
+      <div>
+        <span>{label}</span>
+        <strong>{value || 0}</strong>
+      </div>
+    </div>
+  );
+}
+
 function formatDate(date) {
   if (!date) return "—";
-
-  return new Date(date).toLocaleString("es-BO", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return new Date(date).toLocaleString("es-BO");
 }

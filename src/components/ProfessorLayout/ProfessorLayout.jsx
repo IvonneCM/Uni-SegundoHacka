@@ -23,8 +23,6 @@ export default function ProfessorLayout({ children }) {
         <nav className={s.nav}>
           <NavLink to="/professor"><FiHome />Panel</NavLink>
           <NavLink to="/professor/assignments"><FiBookOpen />Tareas</NavLink>
-          <NavLink to="/professor/audit"><FiShield />Auditoría</NavLink>
-          <NavLink to="/professor/lms"><FiDatabase />LMS</NavLink>
         </nav>
 
         <div className={s.userBox}>
