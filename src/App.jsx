@@ -9,8 +9,8 @@ import Submissions from './pages/Submissions/Submissions';
 import SubmissionDetail from './pages/Submissions/SubmissionDetail';
 import Results from './pages/Results/Results';
 import Audit from './pages/Results/Audit';
-import LmsSync from './pages/LmsSync';
-import Users from './pages/Users';
+import LmsSync from './pages/LmsSync/LmsSync';
+import Users from './pages/Users/Users';
 import './index.css';
 
 function PrivateRoute({ children, roles }) {
