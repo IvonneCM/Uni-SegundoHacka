@@ -111,6 +111,16 @@ export default function Dashboard() {
             <p className={s.quickTitle}>Resultados</p>
             <p className={s.quickSub}>Notas y estado de ejecución</p>
           </Link>
+          <Link to="/users" className={s.quickCard}>
+            <span className={s.quickIcon}>👤</span>
+            <p className={s.quickTitle}>Usuarios</p>
+            <p className={s.quickSub}>Gestionar cuentas</p>
+          </Link>
+          <Link to="/lms-sync" className={s.quickCard}>
+            <span className={s.quickIcon}>⇄</span>
+            <p className={s.quickTitle}>Sincronización</p>
+            <p className={s.quickSub}>Estado de envíos a LMS</p>
+          </Link>
           {user?.role === 'admin' && (
             <Link to="/audit" className={s.quickCard}>
               <span className={s.quickIcon}>◑</span>
