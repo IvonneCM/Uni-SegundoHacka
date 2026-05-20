@@ -34,7 +34,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Navigate to="/professor" />} />
+          <Route path="/" element={<Navigate to="/login" />} />
 
           <Route path="/professor" element={<TeacherLayout><ProfessorDashboard /></TeacherLayout>} />
           <Route path="/professor/assignments" element={<TeacherLayout><ProfessorAssignments /></TeacherLayout>} />

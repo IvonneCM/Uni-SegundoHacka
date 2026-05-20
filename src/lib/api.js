@@ -3,7 +3,7 @@ import axios from 'axios';
 const USE_MOCK = true; // CAMBIA ESTO a false cuando tengas backend
 
 const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:4000/api';
-const SUBMISSION_URL = import.meta.env.VITE_SUBMISSION_URL || 'http://localhost:4001/api';
+const SUBMISSION_URL = import.meta.env.VITE_SUBMISSION_URL || 'http://localhost:4004';
 const GRADING_URL = import.meta.env.VITE_GRADING_URL || 'http://localhost:4002/api';
 const PLAGIARISM_URL = import.meta.env.VITE_PLAGIARISM_URL || 'http://localhost:4004/api';
 const AUDIT_URL = import.meta.env.VITE_AUDIT_URL || 'http://localhost:4005/api';

@@ -1,282 +1,186 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import {
-  FiArrowLeft,
-  FiCheckCircle,
-  FiCode,
-  FiPlay,
-  FiSave,
-  FiShield,
-} from "react-icons/fi";
+import { FiArrowLeft, FiCheckCircle, FiPlay, FiSave } from "react-icons/fi";
+import { professorApi } from "../../lib/professorApi";
+import { useAuth } from "../../lib/auth";
 import s from "./Professor.module.css";
 
 export default function ProfessorGrading() {
   const { submissionId } = useParams();
+  const { user } = useAuth();
+
+  const [submission, setSubmission] = useState(null);
+  const [executionLog, setExecutionLog] = useState("Esperando ejecución...");
 
   const [criteria, setCriteria] = useState([
-    {
-      id: 1,
-      name: "Correctitud",
-      description: "El código cumple con la salida esperada.",
-      maxScore: 50,
-      score: 40,
-    },
-    {
-      id: 2,
-      name: "Uso de estructuras",
-      description: "Usa ciclos, condicionales o funciones correctamente.",
-      maxScore: 30,
-      score: 25,
-    },
-    {
-      id: 3,
-      name: "Buenas prácticas",
-      description: "Código claro, ordenado y entendible.",
-      maxScore: 20,
-      score: 15,
-    },
+    { id: 1, name: "Correctitud", description: "Salida esperada correcta.", maxScore: 50, score: 40 },
+    { id: 2, name: "Uso de estructuras", description: "Uso adecuado de ciclos, condiciones o funciones.", maxScore: 30, score: 25 },
+    { id: 3, name: "Buenas prácticas", description: "Código claro y ordenado.", maxScore: 20, score: 15 },
   ]);
 
-  const [tests, setTests] = useState([
-    {
-      id: 1,
-      input: "5",
-      expected: "25",
-      obtained: "25",
-      status: "passed",
-      score: 25,
-    },
-    {
-      id: 2,
-      input: "10",
-      expected: "100",
-      obtained: "100",
-      status: "passed",
-      score: 25,
-    },
-  ]);
+  useEffect(() => {
+    professorApi
+      .getSubmissionForGrading(submissionId)
+      .then(setSubmission)
+      .catch((error) => Swal.fire("Error", error.message, "error"));
+  }, [submissionId]);
 
-  const [plagiarism] = useState({
-    internalSimilarity: 18,
-    externalSimilarity: 12,
-    result: "low_risk",
-  });
-
-  const [executionLog] = useState(
-    "Compilación correcta.\nEjecución finalizada.\n2/2 pruebas superadas."
+  const totalScore = useMemo(
+    () => criteria.reduce((acc, c) => acc + Number(c.score || 0), 0),
+    [criteria]
   );
 
-  const totalScore = useMemo(() => {
-    return criteria.reduce((acc, item) => acc + Number(item.score || 0), 0);
-  }, [criteria]);
-
-  const maxScore = useMemo(() => {
-    return criteria.reduce((acc, item) => acc + Number(item.maxScore || 0), 0);
-  }, [criteria]);
+  const maxScore = useMemo(
+    () => criteria.reduce((acc, c) => acc + Number(c.maxScore || 0), 0),
+    [criteria]
+  );
 
   const updateScore = (id, value) => {
     setCriteria((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              score: Math.min(Number(value), item.maxScore),
-            }
-          : item
+      prev.map((c) =>
+        c.id === id ? { ...c, score: Math.min(Number(value), c.maxScore) } : c
       )
     );
   };
 
-  const handleSave = () => {
-    Swal.fire({
-      icon: "success",
-      title: "Calificación registrada",
-      text: `La nota final es ${totalScore}/${maxScore}.`,
-      confirmButtonColor: "#6ee7b7",
-    });
+  const handleRun = () => {
+    setExecutionLog(
+      `Compilación correcta.
+Lenguaje: ${submission?.language}
+Ejecución finalizada.
+Pruebas simuladas superadas.
+Nota preliminar: ${totalScore}/${maxScore}.`
+    );
+
+    Swal.fire("Ejecución completada", "El código fue ejecutado correctamente.", "success");
   };
 
-  const handleRun = () => {
-    Swal.fire({
-      icon: "info",
-      title: "Ejecución simulada",
-      text: "El código fue ejecutado y las pruebas fueron procesadas.",
-      confirmButtonColor: "#6ee7b7",
-    });
+  const handleSave = async () => {
+    try {
+      await professorApi.updateSubmissionStatus(submissionId, "graded", user?.id);
+
+      Swal.fire(
+        "Calificación registrada",
+        `La nota final es ${totalScore}/${maxScore}. El envío fue marcado como graded.`,
+        "success"
+      );
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
   };
+
+  if (!submission) {
+    return <div className={s.loading}>Cargando envío...</div>;
+  }
 
   return (
     <div className={s.page}>
       <div className={s.header}>
         <div>
-          <Link to="/professor/assignments" className={s.backBtn}>
-            <FiArrowLeft />
-            Volver
+          <Link to={`/professor/assignments/${submission.assignment_id}`} className={s.backBtn}>
+            <FiArrowLeft /> Volver a la tarea
           </Link>
 
           <span className={s.kicker}>Grading Service</span>
           <h1>Calificación automática</h1>
-          <p>
-            Evaluación del envío, criterios del profesor, pruebas automáticas y
-            revisión de plagio.
-          </p>
+          <p>Evaluación del código enviado por el estudiante.</p>
         </div>
 
         <button className={s.primaryBtn} onClick={handleSave}>
-          <FiSave />
-          Guardar nota
+          <FiSave /> Guardar nota
         </button>
       </div>
 
+      <section className={s.section}>
+        <div className={s.infoGrid}>
+          <div>
+            <span>Tarea</span>
+            <strong>{submission.assignment_title}</strong>
+          </div>
+          <div>
+            <span>Estudiante</span>
+            <strong>{submission.student_name}</strong>
+          </div>
+          <div>
+            <span>Intento</span>
+            <strong>#{submission.attempt_number}</strong>
+          </div>
+        </div>
+      </section>
+
       <div className={s.statsGrid}>
         <div className={s.statCard}>
-          <div className={s.statIcon}>
-            <FiCheckCircle />
-          </div>
+          <div className={s.statIcon}><FiCheckCircle /></div>
           <div>
             <span>Nota final</span>
-            <strong>
-              {totalScore}/{maxScore}
-            </strong>
+            <strong>{totalScore}/{maxScore}</strong>
           </div>
         </div>
 
         <div className={s.statCard}>
-          <div className={s.statIcon}>
-            <FiPlay />
-          </div>
+          <div className={s.statIcon}><FiPlay /></div>
           <div>
-            <span>Pruebas aprobadas</span>
-            <strong>
-              {tests.filter((t) => t.status === "passed").length}/
-              {tests.length}
-            </strong>
-          </div>
-        </div>
-
-        <div className={s.statCard}>
-          <div className={s.statIcon}>
-            <FiShield />
-          </div>
-          <div>
-            <span>Plagio interno</span>
-            <strong>{plagiarism.internalSimilarity}%</strong>
-          </div>
-        </div>
-
-        <div className={s.statCard}>
-          <div className={s.statIcon}>
-            <FiCode />
-          </div>
-          <div>
-            <span>Submission ID</span>
-            <strong className={s.smallStrong}>{submissionId.slice(0, 8)}</strong>
+            <span>Estado</span>
+            <strong>{submission.status}</strong>
           </div>
         </div>
       </div>
 
-      <div className={s.gradingGrid}>
-        <section className={s.section}>
-          <div className={s.sectionHeader}>
-            <div>
-              <h2>Criterios de calificación</h2>
-              <p>Estos criterios son definidos por el profesor.</p>
-            </div>
+      <section className={s.section}>
+        <div className={s.sectionHeader}>
+          <div>
+            <h2>Criterios de calificación</h2>
+            <p>Definidos por el profesor para calcular la nota.</p>
           </div>
 
-          <div className={s.criteriaList}>
-            {criteria.map((item) => (
-              <div className={s.criteriaCard} key={item.id}>
-                <div>
-                  <strong>{item.name}</strong>
-                  <p>{item.description}</p>
-                  <small>Máximo: {item.maxScore} pts</small>
-                </div>
+          <button className={s.secondaryBtn} onClick={handleRun}>
+            <FiPlay /> Ejecutar
+          </button>
+        </div>
 
-                <input
-                  type="number"
-                  min="0"
-                  max={item.maxScore}
-                  value={item.score}
-                  onChange={(e) => updateScore(item.id, e.target.value)}
-                />
+        <div className={s.criteriaList}>
+          {criteria.map((criterion) => (
+            <div className={s.criteriaCard} key={criterion.id}>
+              <div>
+                <strong>{criterion.name}</strong>
+                <p>{criterion.description}</p>
+                <small>Máximo: {criterion.maxScore} pts</small>
               </div>
-            ))}
-          </div>
-        </section>
 
-        <section className={s.section}>
-          <div className={s.sectionHeader}>
-            <div>
-              <h2>Pruebas automáticas</h2>
-              <p>Simulación de ejecución del código enviado.</p>
+              <input
+                type="number"
+                min="0"
+                max={criterion.maxScore}
+                value={criterion.score}
+                onChange={(e) => updateScore(criterion.id, e.target.value)}
+              />
             </div>
+          ))}
+        </div>
+      </section>
 
-            <button className={s.secondaryBtn} onClick={handleRun}>
-              <FiPlay />
-              Ejecutar
-            </button>
+      <section className={s.section}>
+        <div className={s.sectionHeader}>
+          <div>
+            <h2>Código fuente enviado</h2>
+            <p>Código recuperado desde Submission Service.</p>
           </div>
+        </div>
 
-          <div className={s.testsList}>
-            {tests.map((test) => (
-              <div className={s.testCard} key={test.id}>
-                <span className={s.openBadge}>{test.status}</span>
-                <p>
-                  <b>Input:</b> {test.input}
-                </p>
-                <p>
-                  <b>Esperado:</b> {test.expected}
-                </p>
-                <p>
-                  <b>Obtenido:</b> {test.obtained}
-                </p>
-                <small>Puntaje: {test.score}</small>
-              </div>
-            ))}
+        <pre className={s.logBox}>{submission.source_code}</pre>
+      </section>
+
+      <section className={s.section}>
+        <div className={s.sectionHeader}>
+          <div>
+            <h2>Logs de ejecución</h2>
+            <p>Registro auditable de ejecución simulada.</p>
           </div>
-        </section>
-      </div>
+        </div>
 
-      <div className={s.gradingGrid}>
-        <section className={s.section}>
-          <div className={s.sectionHeader}>
-            <div>
-              <h2>Reporte de plagio</h2>
-              <p>Comparación interna y servicio externo tipo TurnItIn.</p>
-            </div>
-          </div>
-
-          <div className={s.infoGrid}>
-            <div>
-              <span>Similitud interna</span>
-              <strong>{plagiarism.internalSimilarity}%</strong>
-            </div>
-
-            <div>
-              <span>Similitud externa</span>
-              <strong>{plagiarism.externalSimilarity}%</strong>
-            </div>
-
-            <div>
-              <span>Resultado</span>
-              <strong>{plagiarism.result}</strong>
-            </div>
-          </div>
-        </section>
-
-        <section className={s.section}>
-          <div className={s.sectionHeader}>
-            <div>
-              <h2>Logs de ejecución</h2>
-              <p>Registro auditable de la ejecución.</p>
-            </div>
-          </div>
-
-          <pre className={s.logBox}>{executionLog}</pre>
-        </section>
-      </div>
+        <pre className={s.logBox}>{executionLog}</pre>
+      </section>
     </div>
   );
 }
