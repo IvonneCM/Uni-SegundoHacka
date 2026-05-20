@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import Swal from "sweetalert2";
 
 import {
   FiArrowLeft,
@@ -22,108 +23,100 @@ export default function ProfessorAssignmentDetail() {
 
   const [summary, setSummary] = useState(null);
   const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadData();
   }, [id]);
 
   const loadData = async () => {
-    const summaryData = await professorApi.getAssignmentSummary(id);
-    const submissionsData = await professorApi.getSubmissionsByAssignment(id);
+    try {
+      setLoading(true);
 
-    setSummary(summaryData);
-    setSubmissions(submissionsData);
+      const summaryData = await professorApi.getAssignmentSummary(id);
+      const submissionsData = await professorApi.getSubmissionsByAssignment(id);
+
+      setSummary(summaryData);
+      setSubmissions(submissionsData);
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (!summary) {
+  if (loading) {
     return <div className={s.loading}>Cargando detalle de la tarea...</div>;
   }
 
+  if (!summary?.assignment) {
+    return <div className={s.loading}>No se encontró la tarea.</div>;
+  }
+
   const assignment = summary.assignment;
-  const stats = summary.stats;
+  const stats = summary.stats || {};
+
+  const criteria =
+    summary.criteria && summary.criteria.length > 0
+      ? summary.criteria
+      : defaultCriteria;
+
+  const tests =
+    summary.test_cases && summary.test_cases.length > 0
+      ? summary.test_cases
+      : defaultTests;
 
   return (
     <div className={s.page}>
       <div className={s.header}>
-        <div>
-          <Link to="/professor/assignments" className={s.backBtn}>
-            <FiArrowLeft />
-            Volver a tareas
-          </Link>
+        <Link to="/professor/assignments" className={s.backBtn}>
+          <FiArrowLeft />
+          Volver a tareas
+        </Link>
 
-          <span className={s.kicker}>Detalle de tarea</span>
-          <h1>{assignment.title}</h1>
-          <p>{assignment.description || "Sin descripción registrada."}</p>
-        </div>
+        <span className={s.kicker}>Detalle de tarea</span>
+        <h1>{assignment.title}</h1>
+        <p>{assignment.description || "Sin descripción registrada."}</p>
       </div>
 
       <div className={s.statsGrid}>
-        <div className={s.statCard}>
-  <div className={s.statIcon}>
-    <FiBook />
-  </div>
-  <div>
-    <span>Estado</span>
-    <strong>
-      {assignment.assignment_status === "open" ? "Abierta" : "Cerrada"}
-    </strong>
-  </div>
-</div>
+        <StatCard
+          icon={<FiBook />}
+          label="Estado"
+          value={assignment.assignment_status === "open" ? "Abierta" : "Cerrada"}
+        />
 
-        <div className={s.statCard}>
-          <div className={s.statIcon}>
-            <FiUsers />
-          </div>
-          <div>
-            <span>Estudiantes</span>
-            <strong>{stats.total_students || 0}</strong>
-          </div>
-        </div>
+        <StatCard
+          icon={<FiUsers />}
+          label="Estudiantes"
+          value={stats.total_students || 0}
+        />
 
-        <div className={s.statCard}>
-          <div className={s.statIcon}>
-            <FiCode />
-          </div>
-          <div>
-            <span>Entregas</span>
-            <strong>{stats.total_submissions || 0}</strong>
-          </div>
-        </div>
+        <StatCard
+          icon={<FiCode />}
+          label="Entregas"
+          value={stats.total_submissions || 0}
+        />
 
-        <div className={s.statCard}>
-          <div className={s.statIcon}>
-            <FiClock />
-          </div>
-          <div>
-            <span>Máx. intentos</span>
-            <strong>{stats.max_attempts || 0}</strong>
-          </div>
-        </div>
+        <StatCard
+          icon={<FiClock />}
+          label="Máx. intentos"
+          value={stats.max_attempts || 0}
+        />
       </div>
 
       <section className={s.section}>
         <div className={s.sectionHeader}>
           <div>
             <h2>Información académica</h2>
-            <p>Datos que utiliza el Submission Service para validar envíos.</p>
+            <p>Datos que utiliza Submission Service para validar envíos.</p>
           </div>
         </div>
 
         <div className={s.infoGrid}>
-          <div>
-            <span>Lenguaje requerido</span>
-            <strong>{assignment.language}</strong>
-          </div>
-
-          <div>
-            <span>Fecha límite</span>
-            <strong>{formatDate(assignment.deadline)}</strong>
-          </div>
-
-          <div>
-            <span>Última entrega</span>
-            <strong>{formatDate(stats.last_submission_at)}</strong>
-          </div>
+          <InfoItem label="Lenguaje requerido" value={assignment.language} />
+          <InfoItem label="Fecha límite" value={formatDate(assignment.deadline)} />
+          <InfoItem label="Última entrega" value={formatDate(stats.last_submission_at)} />
         </div>
       </section>
 
@@ -131,17 +124,19 @@ export default function ProfessorAssignmentDetail() {
         <div className={s.sectionHeader}>
           <div>
             <h2>Criterios de calificación</h2>
-            <p>Reglas que el profesor define para que Grading Service calcule la nota.</p>
+            <p>Reglas que utiliza Grading Service para calcular la nota.</p>
           </div>
         </div>
 
         <div className={s.criteriaList}>
-          {(summary.criteria || defaultCriteria).map((criterion) => (
+          {criteria.map((criterion) => (
             <div className={s.criteriaCard} key={criterion.id}>
               <div>
                 <strong>{criterion.name}</strong>
                 <p>{criterion.description}</p>
-                <small>Puntaje máximo: {criterion.max_score || criterion.maxScore} pts</small>
+                <small>
+                  Puntaje máximo: {criterion.max_score || criterion.maxScore} pts
+                </small>
               </div>
             </div>
           ))}
@@ -152,20 +147,23 @@ export default function ProfessorAssignmentDetail() {
         <div className={s.sectionHeader}>
           <div>
             <h2>Pruebas automáticas</h2>
-            <p>Casos de prueba o métricas que se usarán para ejecutar el código.</p>
+            <p>Casos de prueba o métricas usadas para ejecutar el código.</p>
           </div>
         </div>
 
         <div className={s.testsList}>
-          {(summary.test_cases || defaultTests).map((test) => (
+          {tests.map((test) => (
             <div className={s.testCard} key={test.id}>
               <span className={s.languageBadge}>Test case</span>
+
               <p>
                 <b>Entrada:</b> {test.input_data || test.input}
               </p>
+
               <p>
                 <b>Salida esperada:</b> {test.expected_output || test.expected}
               </p>
+
               <small>Puntaje: {test.score} pts</small>
             </div>
           ))}
@@ -228,14 +226,20 @@ export default function ProfessorAssignmentDetail() {
                     Calificar
                   </Link>
 
-                  <button className={s.miniBtn} type="button">
+                  <button
+                    className={s.miniBtn}
+                    type="button"
+                    title="Revisar plagio"
+                  >
                     <FiShield />
-                    Plagio
                   </button>
 
-                  <button className={s.miniBtn} type="button">
+                  <button
+                    className={s.miniBtn}
+                    type="button"
+                    title="Sincronizar LMS"
+                  >
                     <FiDatabase />
-                    LMS
                   </button>
                 </div>
               </div>
@@ -247,17 +251,41 @@ export default function ProfessorAssignmentDetail() {
   );
 }
 
+function StatCard({ icon, label, value }) {
+  return (
+    <div className={s.statCard}>
+      <div className={s.statIcon}>{icon}</div>
+
+      <div>
+        <span>{label}</span>
+        <strong>{value}</strong>
+      </div>
+    </div>
+  );
+}
+
+function InfoItem({ label, value }) {
+  return (
+    <div>
+      <span>{label}</span>
+      <strong>{value || "—"}</strong>
+    </div>
+  );
+}
+
 const defaultCriteria = [
   {
     id: 1,
     name: "Correctitud",
-    description: "El código debe producir la salida esperada según los casos de prueba.",
+    description:
+      "El código debe producir la salida esperada según los casos de prueba.",
     maxScore: 50,
   },
   {
     id: 2,
     name: "Uso de estructuras",
-    description: "Uso adecuado de ciclos, condicionales, funciones o estructuras requeridas.",
+    description:
+      "Uso adecuado de ciclos, condicionales, funciones o estructuras requeridas.",
     maxScore: 30,
   },
   {

@@ -32,21 +32,15 @@ export default function ProfessorAudit() {
   return (
     <div className={s.page}>
       <div className={s.header}>
-        <div>
-          <span className={s.kicker}>Audit Service</span>
-          <h1>Auditoría académica</h1>
-          <p>
-            Registro trazable para revisión estatal de notas, envíos y cambios.
-          </p>
-        </div>
+        <span className={s.kicker}>Audit Service</span>
+        <h1>Auditoría académica</h1>
+        <p>Registro trazable para revisión estatal de notas, envíos y cambios.</p>
       </div>
 
       <div className={s.auditList}>
         {logs.map((log) => (
           <div className={s.auditCard} key={log.id}>
-            <div className={s.auditIcon}>
-              <FiShield />
-            </div>
+            <div className={s.auditIcon}><FiShield /></div>
 
             <div className={s.auditContent}>
               <div className={s.auditTop}>
@@ -57,20 +51,9 @@ export default function ProfessorAudit() {
               <p>{log.description}</p>
 
               <div className={s.auditMeta}>
-                <span>
-                  <FiUser />
-                  {log.user}
-                </span>
-
-                <span>
-                  <FiClock />
-                  {log.date}
-                </span>
-
-                <span>
-                  <FiServer />
-                  {log.service}
-                </span>
+                <span><FiUser /> {log.user}</span>
+                <span><FiClock /> {log.date}</span>
+                <span><FiServer /> {log.service}</span>
               </div>
             </div>
           </div>
